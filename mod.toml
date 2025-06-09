@@ -1,0 +1,57 @@
+[manifest]
+id = "ProxyMM_KV"
+version = "0.0.5"
+display_name = "KV"
+description =  """
+A simple KV Store for N64Recomp projects
+"""
+short_description = "A simple KV Store for N64Recomp projects"
+authors = [ "ProxySaw", "LT_Schmiddy" ]
+game_id = "mm"
+minimum_recomp_version = "1.2.0"
+dependencies = []
+native_libraries = [
+    { name = "ProxyRecomp_KV005", funcs = [
+        "KV_PathUpdateInternal",
+        "KV_Get",
+        "KV_Set",
+        "KV_Has",
+        "KV_Remove",
+        "KV_DeleteSlot",
+        "KV_CopySlot"
+    ] }
+]
+
+[inputs]
+elf_path = "./build/mod.elf"
+mod_filename = "ProxyMM_KV"
+func_reference_syms_file = "./Zelda64RecompSyms/mm.us.rev1.syms.toml"
+data_reference_syms_files = [ "./Zelda64RecompSyms/mm.us.rev1.datasyms.toml", "./Zelda64RecompSyms/mm.us.rev1.datasyms_static.toml", "./custom_syms.toml" ]
+additional_files = [ "thumb.png" ]
+
+# Info for building the extlib. If this mod will have no extlib, remove this section and
+# the build scripts disable extlib compilation and packaging.
+[extlib_compilation]
+
+# Name of the extlib. This information is passed to CMake as the target name for the extlib.
+library_name = "ProxyRecomp_KV005"
+
+# CMake presets for Debug builds. Used to contruct preset groups in `user_build_config.json`.
+windows_debug_configure_preset = "zig-windows-x64-Debug"
+windows_debug_build_preset = "zig-windows-x64-Debug"
+
+macos_debug_configure_preset = "zig-macos-aarch64-Debug"
+macos_debug_build_preset = "zig-macos-aarch64-Debug"
+
+linux_debug_configure_preset = "zig-linux-x64-Debug"
+linux_debug_build_preset = "zig-linux-x64-Debug"
+
+# CMake presets for Release builds. Used to contruct preset groups in `user_build_config.json`.
+windows_release_configure_preset = "zig-windows-x64-Release"
+windows_release_build_preset = "zig-windows-x64-Release"
+
+macos_release_configure_preset = "zig-macos-aarch64-Release"
+macos_release_build_preset = "zig-macos-aarch64-Release"
+
+linux_release_configure_preset = "zig-linux-x64-Release"
+linux_release_build_preset = "zig-linux-x64-Release"

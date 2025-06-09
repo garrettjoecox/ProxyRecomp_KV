@@ -1,11 +1,29 @@
-#ifndef __RECOMP_HELPERS__
-#define __RECOMP_HELPERS__
+#pragma once
 
-#include "mod_recomp.h"
+extern "C" {
+    #include "mod_recomp.h"
+    #define RECOMP_API_VERSION 1
+    #define TO_PTR(type, var) ((type*)(&rdram[(uint64_t)var - 0xFFFFFFFF80000000]))
+    #define PTR(x) int32_t
+
+    // Type Defs:
+    typedef uint8_t u8;
+    typedef uint16_t u16;
+    typedef uint32_t u32;
+    typedef uint64_t u64;
+
+    typedef int8_t s8;
+    typedef int16_t s16;
+    typedef int32_t s32;
+    typedef int64_t s64;
+}
+
+
 
 #include <string>
 #include <stdint.h>
 
+#define RDRAM_TO_PTR(rdram, type, var) ((type*)(&rdram[(uint64_t)var - 0xFFFFFFFF80000000]))
 #define TO_PTR(type, var) ((type*)(&rdram[(uint64_t)var - 0xFFFFFFFF80000000]))
 #define PTR(x) int32_t
 
@@ -16,6 +34,38 @@
     #define DLLEXPORT __attribute__((visibility("default")))
     #define DLLIMPORT
 #endif
+
+inline std::string ptr_to_string(uint8_t* rdram, PTR(char) str) {
+    size_t len = 0;
+    while (MEM_B(str, len) != 0x00) {
+        len++;
+    }
+
+    std::string ret{};
+    ret.reserve(len + 1);
+
+    for (size_t i = 0; i < len; i++) {
+        ret += (char)MEM_B(str, i);
+    }
+
+    return ret;
+}
+
+inline std::u8string ptr_to_u8string(uint8_t* rdram, PTR(char) str) {
+    size_t len = 0;
+    while (MEM_B(str, len) != 0x00) {
+        len++;
+    }
+
+    std::u8string ret{};
+    ret.reserve(len + 1);
+
+    for (size_t i = 0; i < len; i++) {
+        ret += (char)MEM_B(str, i);
+    }
+
+    return ret;
+}
 
 template<int index, typename T>
 T _arg(uint8_t* rdram, recomp_context* ctx) {
@@ -54,19 +104,15 @@ std::string _arg_string(uint8_t* rdram, recomp_context* ctx) {
     PTR(char) str = _arg<arg_index, PTR(char)>(rdram, ctx);
 
     // Get the length of the byteswapped string.
-    size_t len = 0;
-    while (MEM_B(str, len) != 0x00) {
-        len++;
-    }
+    return ptr_to_string(rdram, str);
+}
 
-    std::string ret{};
-    ret.reserve(len + 1);
+template <int arg_index>
+std::u8string _arg_u8string(uint8_t* rdram, recomp_context* ctx) {
+    PTR(char) str = _arg<arg_index, PTR(char)>(rdram, ctx);
 
-    for (size_t i = 0; i < len; i++) {
-        ret += (char)MEM_B(str, i);
-    }
-
-    return ret;
+    // Get the length of the byteswapped string.
+    return ptr_to_u8string(rdram, str);
 }
 
 template <typename T>
@@ -86,4 +132,9 @@ void _return(recomp_context* ctx, T val) {
     }
 }
 
-#endif
+#define NO_EXTERN_RECOMP_DLL_FUNC(_f_name) RECOMP_EXPORT void _f_name(uint8_t* rdram, recomp_context* ctx)
+#define RECOMP_DLL_FUNC(_f_name) extern "C" NO_EXTERN_RECOMP_DLL_FUNC(_f_name)
+#define RECOMP_ARG(_type, _pos) _arg<_pos, _type>(rdram, ctx)
+#define RECOMP_ARG_STR(_pos) _arg_string<_pos>(rdram, ctx)
+#define RECOMP_ARG_U8STR(_pos) _arg_u8string<_pos>(rdram, ctx)
+#define RECOMP_RETURN(_type, _value) _return(ctx, (_type) _value); return

@@ -2,8 +2,7 @@
 #include <string>
 
 #include "sqlite3.h"
-#include "helpers.hpp"
-#include "mod_recomp.h"
+#include "lib_recomp.hpp"
 
 #define DB_FILE_EXT ".ProxyRecomp_KV.db"
 
@@ -41,7 +40,7 @@ DLLEXPORT void KV_Init(uint8_t* rdram, recomp_context* ctx) {
 }
 
 DLLEXPORT void KV_PathUpdateInternal(uint8_t* rdram, recomp_context* ctx) {
-    fs::path new_path = fs::path(_arg_string<0>(rdram, ctx)).replace_extension(DB_FILE_EXT);
+    fs::path new_path = fs::path(_arg_u8string<0>(rdram, ctx)).replace_extension(DB_FILE_EXT);
 
     if (kvState == -1) {
         DB_FILE = new_path;
